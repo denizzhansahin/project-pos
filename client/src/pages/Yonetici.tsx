@@ -714,14 +714,14 @@ function YoneticiApp() {
               <label htmlFor="date-filter" className="flex items-center gap-2 font-medium"> <Calendar size={20} className="text-gray-600" /> Filter by Date: </label>
               <input type="date" id="date-filter" value={selectedDate ? formatDateForApi(selectedDate) : ''} onChange={handleDateChange} className="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
               <button onClick={handleSetToday} className="bg-blue-500 text-white rounded-md px-4 py-2 hover:bg-blue-600 transition-colors"> Today </button>
-              {selectedDate && (<button onClick={handleSetYenile} className="bg-gray-200 text-gray-700 rounded-md px-4 py-2 hover:bg-gray-300 transition-colors flex items-center gap-1" title="Clear date filter"> <Undo2 size={16} /> Yenile </button>)}
+                   <button onClick={handleSetYenile} className="bg-gray-200 text-gray-700 rounded-md px-4 py-2 hover:bg-gray-300 transition-colors flex items-center gap-1" title="Clear date filter"> <Undo2 size={16}/> Yenile </button> 
 
               {selectedDate && (<button onClick={handleClearDate} className="bg-gray-200 text-gray-700 rounded-md px-4 py-2 hover:bg-gray-300 transition-colors flex items-center gap-1" title="Clear date filter"> <Undo2 size={16} /> Clear </button>)}
             </div>
             <a>{selectedDate ? selectedDate.toLocaleDateString() : "Tarih Bilgisi Seçiniz"}</a>
             {/* Dashboard Bileşeni */}
             <FinancialDashboardDate
-              completedOrders={completedOrders1}
+              completedOrders={selectedDate?completedOrders1:completedOrders}
               products={products}
               selectedDate={selectedDate} // << Doğru state geçirildi
               isLoading={isLoading}     // << Doğru state geçirildi

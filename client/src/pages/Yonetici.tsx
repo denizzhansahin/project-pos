@@ -66,7 +66,7 @@ function YoneticiApp() {
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(null); // Başlangıçta null
 
-  const [masaAdi, setMasaAdi] = useState<string>('aaa'); // Masa adı için state eklendi
+  const [masaAdi, setMasaAdi] = useState<string>('Masa Adı Yaz'); // Masa adı için state eklendi
 
   // Yüklenme ve Hata Durumları (Basit haliyle)
   const [isLoading, setIsLoading] = useState(false);

@@ -30,7 +30,7 @@ import { ProductManagement } from '../components/ProductManagement';
 
 ///////////////////////////
 import io, { Socket } from 'socket.io-client';
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001' || 'http://192.168.0.166';
 // NestJS backend adresiniz (portu kontrol edin!)
 const SOCKET_URL = API_BASE_URL
 

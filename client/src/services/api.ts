@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 // Backend adresini merkezi bir yerden al (Vite için .env dosyası kullanabilirsin)
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001' || 'http://192.168.0.166';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,

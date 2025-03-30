@@ -1,8 +1,19 @@
 // src/services/api.ts
 import axios from 'axios';
 
+
+const apiPort: number = 3001; // API'nızın çalıştığı port
+const currentHostname: string = window.location.hostname; // örn: "localhost" veya "192.168.0.166"
+const currentProtocol: string = window.location.protocol; // örn: "http:"
+
+const apiBaseUrl1: string = `${currentProtocol}//${currentHostname}:${apiPort}`;
+
+console.log(`API Adresi (Aynı Host, Farklı Port): ${apiBaseUrl1}`);
 // Backend adresini merkezi bir yerden al (Vite için .env dosyası kullanabilirsin)
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001' || 'http://192.168.0.166';
+//const API_BASE_URL = apiBaseUrl1|| import.meta.env.VITE_API_URL || 'http://localhost:3001' || 'http://192.168.0.166';
+
+
+const API_BASE_URL = apiBaseUrl1|| 'http://localhost:3001';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,

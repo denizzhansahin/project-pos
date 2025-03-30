@@ -4,6 +4,12 @@ import { useAuth, AuthUser } from '../context/AuthContext'; // AuthUser'ı impor
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../services/api';
 
+const apiBaseUrl: string = window.location.origin;
+const apiBaseUrl1: string = window.location.hostname;
+
+console.log('API Base URL:', apiBaseUrl);
+console.log('API Base URL 1:', apiBaseUrl1);
+
 export function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -114,6 +120,7 @@ export function LoginPage() {
                  {isLoading ? 'Logging in...' : 'Login'}
                </button>
             </form>
+            <label htmlFor="network" className="block text-sm font-medium text-gray-700 mb-1">{apiBaseUrl1}</label>
           </div>
     </div>
   );

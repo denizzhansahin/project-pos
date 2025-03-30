@@ -30,7 +30,19 @@ import { ProductManagement } from '../components/ProductManagement';
 
 ///////////////////////////
 import io, { Socket } from 'socket.io-client';
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001' || 'http://192.168.0.166';
+const apiPort: number = 3001; // API'nızın çalıştığı port
+const currentHostname: string = window.location.hostname; // örn: "localhost" veya "192.168.0.166"
+const currentProtocol: string = window.location.protocol; // örn: "http:"
+
+const apiBaseUrl1: string = `${currentProtocol}//${currentHostname}:${apiPort}`;
+
+// Backend adresini merkezi bir yerden al (Vite için .env dosyası kullanabilirsin)
+//const API_BASE_URL = apiBaseUrl1|| import.meta.env.VITE_API_URL || 'http://localhost:3001' || 'http://192.168.0.166';
+
+
+const API_BASE_URL = apiBaseUrl1 || 'http://localhost:3001';
+
+//const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001' || 'http://192.168.0.166';
 // NestJS backend adresiniz (portu kontrol edin!)
 const SOCKET_URL = API_BASE_URL
 
@@ -163,13 +175,13 @@ function PersonelApp() {
 
 
 
-      
+
     });
 
     // Sunucudan 'ozelYanit' olayını dinle (ekstra örnek)
     socket.on('ozelYanit', (data: any) => {
-        console.log('Özel yanıt alındı:', data);
-        setReceivedMessages(prev => [...prev, `ÖZEL: ${data.message} (Zaman: ${data.timestamp})`]);
+      console.log('Özel yanıt alındı:', data);
+      setReceivedMessages(prev => [...prev, `ÖZEL: ${data.message} (Zaman: ${data.timestamp})`]);
     });
 
     if (socketRef.current && isConnected) {
@@ -179,7 +191,7 @@ function PersonelApp() {
       socketRef.current.emit('mesajGonder', message);
       setMessage(''); // Input alanını temizle
     } else {
-        console.warn('Mesaj gönderilemedi. Bağlı değil veya mesaj boş.');
+      console.warn('Mesaj gönderilemedi. Bağlı değil veya mesaj boş.');
     }
 
     // Component unmount olduğunda bağlantıyı temizle
@@ -194,18 +206,18 @@ function PersonelApp() {
       socketRef.current = null; // Referansı temizle
       setIsConnected(false);
     };
-  }, [tables,products,selectedTableDetails,completedOrders,selectedTableId]); // Sadece bileşen ilk yüklendiğinde çalışır
+  }, [tables, products, selectedTableDetails, completedOrders, selectedTableId]); // Sadece bileşen ilk yüklendiğinde çalışır
 
   // Mesaj gönderme fonksiyonu
   const sendMessage = useCallback(() => {
     if (message.trim() && socketRef.current && isConnected) {
-      
+
       console.log('"' + message + '" mesajı gönderiliyor...');
       // Sunucuya 'mesajGonder' olayını emit et
       socketRef.current.emit('mesajGonder', 'd');
       setMessage(''); // Input alanını temizle
     } else {
-        console.warn('Mesaj gönderilemedi. Bağlı değil veya mesaj boş.');
+      console.warn('Mesaj gönderilemedi. Bağlı değil veya mesaj boş.');
     }
   }, [message, isConnected]);
 
@@ -588,14 +600,16 @@ function PersonelApp() {
   // Arayüzde büyük değişiklik yok, sadece prop'lar güncellendi
   return (
     <div className="min-h-screen bg-gray-100">
+      <label htmlFor="network" className="block text-sm font-medium text-gray-700 mb-1">{API_BASE_URL}</label>
+
       <nav className="bg-white shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"> {/* Daha iyi padding için sm ve lg eklenebilir */}
           <div className="flex justify-between h-16">
             <div className="flex items-center">
               {/* Başlığı küçük ekranda gizleyip büyükte göstermek isteyebilirsin */}
               <h1 className="text-xl font-bold text-gray-800">
-                 <span className="hidden sm:inline">POS System - Personel</span> {/* Küçükte gizle */}
-                 <span className="sm:hidden">POS</span> {/* Küçükte sadece POS göster */}
+                <span className="hidden sm:inline">POS System - Personel</span> {/* Küçükte gizle */}
+                <span className="sm:hidden">POS</span> {/* Küçükte sadece POS göster */}
               </h1>
             </div>
             <div className="flex">
@@ -619,12 +633,12 @@ function PersonelApp() {
               {/* Financial Butonu */}
               <button
                 onClick={() => setActiveTab('financial')}
-                 className={`px-3 sm:px-4 h-full flex items-center gap-1 sm:gap-2 border-b-2 transition-colors ${ // Mobil için padding ve gap ayarı
+                className={`px-3 sm:px-4 h-full flex items-center gap-1 sm:gap-2 border-b-2 transition-colors ${ // Mobil için padding ve gap ayarı
                   activeTab === 'financial'
                     ? 'border-blue-500 text-blue-500'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
-                 title="Financial"
+                title="Financial"
               >
                 <BarChart3 size={20} />
                 {/* Metni md (medium) ve üzeri ekranlarda göster */}
@@ -655,8 +669,9 @@ function PersonelApp() {
       )}
 
       <main className="max-w-7xl mx-auto py-6 px-4">
-      {activeTab === 'pos' ? (
+        {activeTab === 'pos' ? (
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+
             <div className="lg:col-span-1">
               <div className="mb-4">
                 <label htmlFor="masaAdi" className="block text-sm font-medium text-gray-700">
@@ -706,25 +721,25 @@ function PersonelApp() {
           </div>
         ) : (
           // Finansal Sekme
-           <div>
-              {/* Tarih Filtresi */}
-              <div className="mb-6 p-4 bg-white rounded-lg shadow-md flex flex-wrap items-center gap-4">
-                  <label htmlFor="date-filter" className="flex items-center gap-2 font-medium"> <Calendar size={20} className="text-gray-600" /> Filter by Date: </label>
-                  <input type="date" id="date-filter" value={selectedDate ? formatDateForApi(selectedDate) : ''} onChange={handleDateChange} className="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                  <button onClick={handleSetToday} className="bg-blue-500 text-white rounded-md px-4 py-2 hover:bg-blue-600 transition-colors"> Today </button>
-                   <button onClick={handleSetYenile} className="bg-gray-200 text-gray-700 rounded-md px-4 py-2 hover:bg-gray-300 transition-colors flex items-center gap-1" title="Clear date filter"> <Undo2 size={16}/> Yenile </button> 
+          <div>
+            {/* Tarih Filtresi */}
+            <div className="mb-6 p-4 bg-white rounded-lg shadow-md flex flex-wrap items-center gap-4">
+              <label htmlFor="date-filter" className="flex items-center gap-2 font-medium"> <Calendar size={20} className="text-gray-600" /> Filter by Date: </label>
+              <input type="date" id="date-filter" value={selectedDate ? formatDateForApi(selectedDate) : ''} onChange={handleDateChange} className="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <button onClick={handleSetToday} className="bg-blue-500 text-white rounded-md px-4 py-2 hover:bg-blue-600 transition-colors"> Today </button>
+              <button onClick={handleSetYenile} className="bg-gray-200 text-gray-700 rounded-md px-4 py-2 hover:bg-gray-300 transition-colors flex items-center gap-1" title="Clear date filter"> <Undo2 size={16} /> Yenile </button>
 
-                  {selectedDate && ( <button onClick={handleClearDate} className="bg-gray-200 text-gray-700 rounded-md px-4 py-2 hover:bg-gray-300 transition-colors flex items-center gap-1" title="Clear date filter"> <Undo2 size={16}/> Clear </button> )}
-              </div>
-              {/* Dashboard Bileşeni */}
-              <a>{selectedDate ? selectedDate.toLocaleDateString() : "Tarih Bilgisi Seçiniz"}</a>
-              <FinancialDashboardDate
-                  completedOrders={selectedDate?completedOrders1:completedOrders} // API'den gelen tamamlanmış siparişler
-                  products={products}
-                  selectedDate={selectedDate} // << Doğru state geçirildi
-                  isLoading={isLoading}     // << Doğru state geçirildi
-              />
-           </div>
+              {selectedDate && (<button onClick={handleClearDate} className="bg-gray-200 text-gray-700 rounded-md px-4 py-2 hover:bg-gray-300 transition-colors flex items-center gap-1" title="Clear date filter"> <Undo2 size={16} /> Clear </button>)}
+            </div>
+            {/* Dashboard Bileşeni */}
+            <a>{selectedDate ? selectedDate.toLocaleDateString() : "Tarih Bilgisi Seçiniz"}</a>
+            <FinancialDashboardDate
+              completedOrders={selectedDate ? completedOrders1 : completedOrders} // API'den gelen tamamlanmış siparişler
+              products={products}
+              selectedDate={selectedDate} // << Doğru state geçirildi
+              isLoading={isLoading}     // << Doğru state geçirildi
+            />
+          </div>
         )
         }
 

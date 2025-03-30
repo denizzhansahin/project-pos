@@ -33,10 +33,20 @@ import { OrderPanel } from '../components/OrderPanel';
 import { ProductManagement } from '../components/ProductManagement';
 
 
+
 ///////////////////////////
 import io, { Socket } from 'socket.io-client';
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001' || 'http://192.168.0.166';
-// NestJS backend adresiniz (portu kontrol edin!)
+const apiPort: number = 3001; // API'nızın çalıştığı port
+const currentHostname: string = window.location.hostname; // örn: "localhost" veya "192.168.0.166"
+const currentProtocol: string = window.location.protocol; // örn: "http:"
+
+const apiBaseUrl1: string = `${currentProtocol}//${currentHostname}:${apiPort}`;
+
+// Backend adresini merkezi bir yerden al (Vite için .env dosyası kullanabilirsin)
+//const API_BASE_URL = apiBaseUrl1|| import.meta.env.VITE_API_URL || 'http://localhost:3001' || 'http://192.168.0.166';
+
+
+const API_BASE_URL = apiBaseUrl1 || 'http://localhost:3001';
 const SOCKET_URL = API_BASE_URL
 
 function YoneticiApp() {
@@ -568,7 +578,9 @@ function YoneticiApp() {
   // --- JSX (Görünüm Kısmı) ---
   // Arayüzde büyük değişiklik yok, sadece prop'lar güncellendi
   return (
+    
     <div className="min-h-screen bg-gray-100">
+      <label htmlFor="network" className="block text-sm font-medium text-gray-700 mb-1">{API_BASE_URL}</label>
       <nav className="bg-white shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"> {/* Daha iyi padding için sm ve lg eklenebilir */}
           <div className="flex justify-between h-16">
@@ -651,6 +663,8 @@ function YoneticiApp() {
       <main className="max-w-7xl mx-auto py-6 px-4">
         {activeTab === 'pos' ? (
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            
+
             <div className="lg:col-span-1">
               <div className="mb-4">
                 <label htmlFor="masaAdi" className="block text-sm font-medium text-gray-700">
@@ -714,14 +728,14 @@ function YoneticiApp() {
               <label htmlFor="date-filter" className="flex items-center gap-2 font-medium"> <Calendar size={20} className="text-gray-600" /> Filter by Date: </label>
               <input type="date" id="date-filter" value={selectedDate ? formatDateForApi(selectedDate) : ''} onChange={handleDateChange} className="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
               <button onClick={handleSetToday} className="bg-blue-500 text-white rounded-md px-4 py-2 hover:bg-blue-600 transition-colors"> Today </button>
-                   <button onClick={handleSetYenile} className="bg-gray-200 text-gray-700 rounded-md px-4 py-2 hover:bg-gray-300 transition-colors flex items-center gap-1" title="Clear date filter"> <Undo2 size={16}/> Yenile </button> 
+              <button onClick={handleSetYenile} className="bg-gray-200 text-gray-700 rounded-md px-4 py-2 hover:bg-gray-300 transition-colors flex items-center gap-1" title="Clear date filter"> <Undo2 size={16} /> Yenile </button>
 
               {selectedDate && (<button onClick={handleClearDate} className="bg-gray-200 text-gray-700 rounded-md px-4 py-2 hover:bg-gray-300 transition-colors flex items-center gap-1" title="Clear date filter"> <Undo2 size={16} /> Clear </button>)}
             </div>
             <a>{selectedDate ? selectedDate.toLocaleDateString() : "Tarih Bilgisi Seçiniz"}</a>
             {/* Dashboard Bileşeni */}
             <FinancialDashboardDate
-              completedOrders={selectedDate?completedOrders1:completedOrders}
+              completedOrders={selectedDate ? completedOrders1 : completedOrders}
               products={products}
               selectedDate={selectedDate} // << Doğru state geçirildi
               isLoading={isLoading}     // << Doğru state geçirildi

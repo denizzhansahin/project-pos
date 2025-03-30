@@ -47,6 +47,9 @@ const apiBaseUrl1: string = `${currentProtocol}//${currentHostname}:${apiPort}`;
 
 
 const API_BASE_URL = apiBaseUrl1 || 'http://localhost:3001';
+
+//const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001' || 'http://192.168.0.166';
+// NestJS backend adresiniz (portu kontrol edin!)
 const SOCKET_URL = API_BASE_URL
 
 function YoneticiApp() {
@@ -580,7 +583,7 @@ function YoneticiApp() {
   return (
     
     <div className="min-h-screen bg-gray-100">
-      <label htmlFor="network" className="block text-sm font-medium text-gray-700 mb-1">{API_BASE_URL}</label>
+     
       <nav className="bg-white shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"> {/* Daha iyi padding için sm ve lg eklenebilir */}
           <div className="flex justify-between h-16">
@@ -745,6 +748,7 @@ function YoneticiApp() {
         }
 
       </main>
+      <label htmlFor="network" className="block text-sm font-medium text-gray-700 mb-1">{API_BASE_URL}</label>
     </div>
   );
 }

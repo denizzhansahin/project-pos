@@ -600,7 +600,6 @@ function PersonelApp() {
   // Arayüzde büyük değişiklik yok, sadece prop'lar güncellendi
   return (
     <div className="min-h-screen bg-gray-100">
-      <label htmlFor="network" className="block text-sm font-medium text-gray-700 mb-1">{API_BASE_URL}</label>
 
       <nav className="bg-white shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"> {/* Daha iyi padding için sm ve lg eklenebilir */}
@@ -744,6 +743,8 @@ function PersonelApp() {
         }
 
       </main>
+      <label htmlFor="network" className="block text-sm font-medium text-gray-700 mb-1">{API_BASE_URL}</label>
+
     </div>
   );
 }

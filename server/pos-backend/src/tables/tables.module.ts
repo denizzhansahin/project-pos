@@ -5,13 +5,12 @@ import { TablesController } from './tables.controller';
 import { Table } from 'src/entities/table.entity';
 import { OrderItem } from 'src/entities/order-item.entity';
 import { CompletedOrder } from 'src/entities/completed-order.entity';
-import { EventsGateway } from 'src/events/events.gateway';
 
 
 @Module({
   imports: [TypeOrmModule.forFeature([Table, OrderItem,CompletedOrder])], // Kullanılan entity'ler
   controllers: [TablesController],
-  providers: [TablesService,EventsGateway],
+  providers: [TablesService],
   exports: [TablesService] // OrdersModule'ün kullanabilmesi için
 })
 export class TablesModule {}

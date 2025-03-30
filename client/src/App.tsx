@@ -7,6 +7,9 @@ import { LoginPage } from './pages/LoginPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { useAuth } from './context/AuthContext';
 
+
+
+
 function App() {
   const { isLoggedIn, user, isLoading } = useAuth();
 

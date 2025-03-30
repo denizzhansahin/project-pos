@@ -6,7 +6,6 @@ import { CompletedOrder } from 'src/entities/completed-order.entity';
 import { OrderItem } from 'src/entities/order-item.entity';
 import { Table, TableStatus } from 'src/entities/table.entity';
 import { EntityManager, Repository } from 'typeorm';
-import { EventsGateway } from '../events/events.gateway'; // Gateway import edildi
 
 @Injectable()
 export class TablesService {
@@ -21,11 +20,10 @@ export class TablesService {
     private completedOrdersRepository: Repository<CompletedOrder>,
     private readonly entityManager: EntityManager, // Transaction için
 
-    @Inject(forwardRef(() => EventsGateway))
-    private eventsGateway: EventsGateway,
+
   ) {}
 
-  /*
+  
   async create(createTableDto: CreateTableDto): Promise<Table> {
     const existingTable = await this.tablesRepository.findOneBy({ name: createTableDto.name });
     if (existingTable) {
@@ -35,25 +33,9 @@ export class TablesService {
     const newTable = this.tablesRepository.create(createTableDto);
     return this.tablesRepository.save(newTable);
   }
-*/
 
-async create(createTableDto: CreateTableDto): Promise<Table> {
-  const existingTable = await this.tablesRepository.findOne({ where: { name: createTableDto.name } });
-  if (existingTable) {
-    throw new ConflictException(`Table with name "${createTableDto.name}" already exists`);
-  }
-  const newTable = this.tablesRepository.create(createTableDto);
-  const savedTable = await this.tablesRepository.save(newTable);
 
-  // --- Masa Başarıyla Kaydedildikten Sonra ---
-  // 1. Güncel masa listesini al
-  const allTables = await this.tablesRepository.find({ relations: ['order'] }); // Aktif sipariş sayısı için order gerekebilir
-  // 2. Tüm istemcilere yayınla
-  this.eventsGateway.broadcast('tableListUpdated', allTables);
-  this.logger.log(`Broadcasted tableListUpdated after creating table ${savedTable.id}`);
 
-  return savedTable; // API yanıtı olarak yeni oluşturulan masayı döndür
-}
 
   async findAll(): Promise<Table[]> {
     // 'order' ilişkisini yüklemek isteyebilirsiniz, performansa dikkat!

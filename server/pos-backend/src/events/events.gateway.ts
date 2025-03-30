@@ -1,102 +1,62 @@
-// src/events/events.gateway.ts
 import {
   WebSocketGateway,
   SubscribeMessage,
+  MessageBody,
   WebSocketServer,
-  OnGatewayInit,
+  ConnectedSocket,
   OnGatewayConnection,
   OnGatewayDisconnect,
-  MessageBody,
-  ConnectedSocket,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Logger } from '@nestjs/common';
+import { Logger } from '@nestjs/common'; // Loglama için
 
-// CORS ayarları önemli! Frontend adresine izin ver.
-// Portu backend portundan farklı seçmek iyi olabilir ama zorunlu değil.
-// Eğer aynı portu kullanacaksanız, HTTP server ile entegrasyonu doğru yapılmalı.
-// Ayrı port daha basit olabilir: örn. 3002
 @WebSocketGateway({
-   // port: 3002, // Opsiyonel ayrı port
-   cors: {
-     origin: ['http://localhost:5173', 'http://pardus-nirvana-nb-s500-silver.local:5173','http://localhost:4173', 'http://pardus-nirvana-nb-s500-silver.local:4173'], // Frontend adresleriniz
-     methods: ['GET', 'POST'],
-     credentials: true,
-   },
+  cors: {
+    origin: '*', // Geliştirme için tüm originlere izin ver. Prodüksiyonda kısıtla!
+    // Örneğin: origin: 'http://localhost:5173' (Vite dev sunucu portu)
+  },
 })
-export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
-  // Socket.IO sunucu instance'ını enjekte et
-  @WebSocketServer() server: Server;
-  private logger: Logger = new Logger('EventsGateway');
+export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
+  @WebSocketServer()
+  server: Server; // Sunucu örneğine erişim
 
-  afterInit(server: Server) {
-    this.logger.log('WebSocket Gateway Initialized');
-  }
+  private logger: Logger = new Logger('EventsGateway'); // Loglama
 
+  // İstemci bağlandığında çalışır
   handleConnection(client: Socket, ...args: any[]) {
-    this.logger.log(`Client connected: ${client.id}`);
-    // İsteğe bağlı: Bağlanan kullanıcıyı doğrula (JWT kullanarak)
-    // const token = client.handshake.auth.token; // Frontend'den gönderilen token
-    // try {
-    //   const payload = this.jwtService.verify(token);
-    //   client.data.user = payload; // Kullanıcı bilgisini sokete ekle
-    //   this.logger.log(`Client authenticated: ${client.id} - User: ${payload.email}`);
-    // } catch (e) {
-    //   this.logger.error(`Authentication failed for client ${client.id}`, e.message);
-    //   client.disconnect(true);
-    // }
-
-     // Tüm bağlı istemcilere güncel masa listesini gönderebiliriz (opsiyonel)
-     // this.emitTableListUpdate(); // Bu fonksiyonu tanımlamamız lazım
+    this.logger.log(`İstemci bağlandı: ${client.id}`);
   }
 
+  // İstemci bağlantısı kesildiğinde çalışır
   handleDisconnect(client: Socket) {
-    this.logger.log(`Client disconnected: ${client.id}`);
+    this.logger.log(`İstemci ayrıldı: ${client.id}`);
   }
 
-  // --- Olay Yayınlama Metotları (Servisler tarafından çağrılacak) ---
+  // 'mesajGonder' olayını dinler
+  @SubscribeMessage('mesajGonder')
+  handleMessage(
+    @MessageBody() data: string, // Gelen mesajın içeriği
+    @ConnectedSocket() client: Socket, // Mesajı gönderen istemci soketi
+  ): void { // Genellikle void veya WsResponse<T> döner
+    this.logger.log(`Alınan mesaj (${client.id}): ${data}`);
 
-  // Tüm istemcilere genel bir mesaj gönderme örneği
-  broadcast(event: string, payload: any) {
-     this.logger.log(`Broadcasting event: ${event}`);
-     this.server.emit(event, payload);
+    // Mesajı gönderen istemciye geri gönder (echo)
+    // client.emit('mesajAl', `Sunucu aldı: ${data}`);
+
+    // VEYA: Bağlı tüm istemcilere gönder (broadcast)
+    this.server.emit('mesajAl', `(${client.id}) dedi ki: ${data}`);
+
+    // İsteğe bağlı: Gönderene özel bir yanıt göndermek isterseniz:
+    // return { event: 'mesajOnayi', data: 'Mesajınız başarıyla alındı!' };
   }
 
-  // Belirli bir odaya mesaj gönderme (örn: sadece belirli bir masayı izleyenler)
-  emitToRoom(room: string, event: string, payload: any) {
-      this.logger.log(`Emitting event to room ${room}: ${event}`);
-      this.server.to(room).emit(event, payload);
-  }
-
-
-  // --- İstemciden Gelen Mesajları Dinleme (Opsiyonel) ---
-  // Örnek: İstemci bir masayı izlemeye başladığında odaya katılması
-  @SubscribeMessage('joinTableRoom')
-  handleJoinRoom(
-      @MessageBody() tableId: string,
+  // Başka bir olay örneği (isteğe bağlı)
+  @SubscribeMessage('banaOzel')
+  handlePrivateMessage(
+      @MessageBody() data: any,
       @ConnectedSocket() client: Socket,
-  ): void {
-      if (tableId) {
-          const roomName = `table-${tableId}`;
-          client.join(roomName);
-          this.logger.log(`Client ${client.id} joined room: ${roomName}`);
-          // Odaya katılan istemciye o anki masa durumunu gönderebiliriz
-          // this.emitSpecificTableUpdate(tableId, client.id); // Bu fonksiyonu tanımlamamız lazım
-      }
+  ) {
+      this.logger.log(`Özel mesaj isteği (${client.id}):`, data);
+      client.emit('ozelYanit', { message: 'Bu sadece sana özel bir yanıt!', timestamp: new Date() });
   }
-
-  @SubscribeMessage('leaveTableRoom')
-  handleLeaveRoom(
-       @MessageBody() tableId: string,
-       @ConnectedSocket() client: Socket,
-  ): void {
-       if (tableId) {
-            const roomName = `table-${tableId}`;
-            client.leave(roomName);
-            this.logger.log(`Client ${client.id} left room: ${roomName}`);
-       }
-  }
-
-  // Diğer @SubscribeMessage'lar eklenebilir...
-
 }

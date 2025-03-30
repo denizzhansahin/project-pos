@@ -1,6 +1,6 @@
 // App.tsx (Backend Entegrasyonu ile Güncellenmiş - Mevcut Yapı Korunarak)
 
-import React, { useState, useEffect, useCallback } from 'react'; // useEffect eklendi
+import React, { useState, useEffect, useCallback, useRef } from 'react'; // useEffect eklendi
 import { LayoutGrid, ListOrdered, BarChart3 } from 'lucide-react';
 import { Product, OrderItem, Table, CompletedOrder } from '../types';
 // initialProducts'ı artık başlangıçta kullanmayacağız, API'den çekeceğiz.
@@ -26,6 +26,17 @@ import { ProductList } from '../components/ProductList';
 import { OrderPanel } from '../components/OrderPanel';
 import { ProductManagement } from '../components/ProductManagement';
 
+
+
+///////////////////////////
+import io, { Socket } from 'socket.io-client';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+// NestJS backend adresiniz (portu kontrol edin!)
+const SOCKET_URL = API_BASE_URL
+
+
+
+
 function PersonelApp() {
   const [activeTab, setActiveTab] = useState<'pos' | 'management' | 'financial'>('pos');
   // Başlangıç state'lerini boş veya null yapalım, API'den dolacaklar
@@ -35,15 +46,171 @@ function PersonelApp() {
   // Seçili masa detayları için ayrı state (siparişleri içerecek)
   const [selectedTableDetails, setSelectedTableDetails] = useState<Table | null>(null);
   const [completedOrders, setCompletedOrders] = useState<CompletedOrder[]>([]);
+  const [completedOrders1, setCompletedOrders1] = useState<CompletedOrder[]>([]);
+
   const [nextTableNumber, setNextTableNumber] = useState(1); // Başlangıç değeri, API'den sonra güncellenecek
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(null); // Başlangıçta null
 
-  const [masaAdi, setMasaAdi] = useState<string>('aaa'); // Masa adı için state eklendi
+  const [masaAdi, setMasaAdi] = useState<string>('Masa Adı Yaz'); // Masa adı için state eklendi
 
   // Yüklenme ve Hata Durumları (Basit haliyle)
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  /////////
+  const [message, setMessage] = useState(''); // Gönderilecek mesaj
+  const [receivedMessages, setReceivedMessages] = useState<string[]>([]); // Alınan mesajlar
+  const [isConnected, setIsConnected] = useState(false); // Bağlantı durumu
+  const socketRef = useRef<Socket | null>(null); // Soket referansı
+
+
+
+  // Bağlantıyı kurma ve olay dinleyicilerini ayarlama
+  useEffect(() => {
+    // Eğer zaten bağlıysa tekrar bağlanma
+    if (socketRef.current) return;
+
+    console.log('Socket.IO sunucusuna bağlanılıyor...');
+    // Soket bağlantısını başlat
+    socketRef.current = io(SOCKET_URL, {
+      // transports: ['websocket'] // İsteğe bağlı: Sadece websocket kullanmaya zorla
+    });
+
+    const socket = socketRef.current;
+
+    // Bağlantı başarılı olduğunda
+    socket.on('connect', () => {
+      console.log('Socket.IO sunucusuna başarıyla bağlandı! ID:', socket.id);
+      setIsConnected(true);
+      setReceivedMessages(prev => [...prev, `Sunucuya bağlandı (${socket.id})`]);
+    });
+
+    // Bağlantı hatası olduğunda
+    socket.on('connect_error', (error) => {
+      console.error('Socket.IO bağlantı hatası:', error);
+      setIsConnected(false);
+      setReceivedMessages(prev => [...prev, `Bağlantı hatası: ${error.message}`]);
+    });
+
+    // Bağlantı kesildiğinde
+    socket.on('disconnect', (reason) => {
+      console.log('Socket.IO bağlantısı kesildi:', reason);
+      setIsConnected(false);
+      setReceivedMessages(prev => [...prev, `Bağlantı kesildi: ${reason}`]);
+      // İsteğe bağlı: Otomatik tekrar bağlanmayı deneyebilir veya kullanıcıya bildirebilirsiniz
+      // if (reason === 'io server disconnect') {
+      //   // Sunucu tarafından manuel olarak kesildi, tekrar bağlanmayı deneyebilir.
+      //   socket.connect();
+      // }
+    });
+
+    // Sunucudan 'mesajAl' olayını dinle
+    socket.on('mesajAl', async (data: string) => {
+      console.log('Sunucudan mesaj alındı:', data);
+      setReceivedMessages(prev => [...prev, data]); // Gelen mesajı listeye ekle
+      try {
+        const [productsRes, tablesRes] = await Promise.all([
+          fetchProducts(),
+          fetchTables()
+        ]);
+        setProducts(productsRes.data);
+        setTables(tablesRes.data);
+
+        // Masa numarasını ayarla
+        if (tablesRes.data.length > 0) {
+          const maxNum = tablesRes.data.reduce((max: number, t: Table) => {
+            const num = parseInt(t.name.split(' ')[1] || '0');
+            return isNaN(num) ? max : Math.max(max, num); // NaN kontrolü eklendi
+          }, 0);
+          setNextTableNumber(maxNum + 1);
+        } else {
+          setNextTableNumber(1); // Hiç masa yoksa 1'den başla
+        }
+
+      } catch (err) {
+        console.error("Error loading initial data:", err);
+        //setError("Failed to load initial data.");
+      } finally {
+        setIsLoading(false);
+      }
+
+
+      try {
+        // ÖNEMLİ: Backend'den dönen Table objesi 'order' ilişkisini içermeli
+        // (TablesService findOne metodunda { relations: ['order', 'order.product'] } eklenmişti)
+        const response = await fetchTableDetails(selectedTableId);
+        setSelectedTableDetails(response.data);
+      } catch (err) {
+        console.error(`Error fetching details for table ${selectedTableId}:`, err);
+        //setError(`Failed to load details for selected table.`);
+        setSelectedTableId(null); // Hata durumunda seçimi kaldır
+        setSelectedTableDetails(null);
+      } finally {
+        // setIsLoading(false);
+      }
+
+
+      try {
+        const response = await fetchCompletedOrders();
+        setCompletedOrders(response.data);
+      } catch (err) {
+        console.error("Error loading completed orders:", err);
+        //setError("Failed to load financial data.");
+      } finally {
+        setIsLoading(false);
+      }
+
+
+
+      
+    });
+
+    // Sunucudan 'ozelYanit' olayını dinle (ekstra örnek)
+    socket.on('ozelYanit', (data: any) => {
+        console.log('Özel yanıt alındı:', data);
+        setReceivedMessages(prev => [...prev, `ÖZEL: ${data.message} (Zaman: ${data.timestamp})`]);
+    });
+
+    if (socketRef.current && isConnected) {
+      console.log('"' + message + '" mesajı gönderiliyor...');
+      setMessage('mesaj')
+      // Sunucuya 'mesajGonder' olayını emit et
+      socketRef.current.emit('mesajGonder', message);
+      setMessage(''); // Input alanını temizle
+    } else {
+        console.warn('Mesaj gönderilemedi. Bağlı değil veya mesaj boş.');
+    }
+
+    // Component unmount olduğunda bağlantıyı temizle
+    return () => {
+      console.log('Socket.IO bağlantısı kesiliyor...');
+      socket.off('connect');
+      socket.off('connect_error');
+      socket.off('disconnect');
+      socket.off('mesajAl');
+      socket.off('ozelYanit');
+      socket.disconnect();
+      socketRef.current = null; // Referansı temizle
+      setIsConnected(false);
+    };
+  }, [tables,products,selectedTableDetails,completedOrders,selectedTableId]); // Sadece bileşen ilk yüklendiğinde çalışır
+
+  // Mesaj gönderme fonksiyonu
+  const sendMessage = useCallback(() => {
+    if (message.trim() && socketRef.current && isConnected) {
+      
+      console.log('"' + message + '" mesajı gönderiliyor...');
+      // Sunucuya 'mesajGonder' olayını emit et
+      socketRef.current.emit('mesajGonder', 'd');
+      setMessage(''); // Input alanını temizle
+    } else {
+        console.warn('Mesaj gönderilemedi. Bağlı değil veya mesaj boş.');
+    }
+  }, [message, isConnected]);
+
+
+
 
   // --- VERİ ÇEKME ---
   useEffect(() => {
@@ -357,7 +524,7 @@ function PersonelApp() {
       const dateParam = formatDateForApi(date); // Tarihi API formatına çevir
       console.log("Fetching completed orders for date:", dateParam ?? 'all'); // Konsola log ekle
       const response = await fetchCompletedOrdersDate(dateParam);
-      setCompletedOrders(response.data);
+      setCompletedOrders1(response.data);
     } catch (err: any) { // Hata tipini belirt
       console.error("Error loading completed orders:", err);
       setError(err.response?.data?.message || "Failed to load financial data."); // Backend hatasını göster
@@ -391,6 +558,31 @@ function PersonelApp() {
   const handleClearDate = () => {
     setSelectedDate(null);
   };
+
+
+  const handleSetYenile = () => {
+    loadCompletedOrders(selectedDate);
+  };
+
+
+  /*
+  // Tarih seçildiğinde state'i güncelle (inputtan gelen value string'dir)
+  const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const dateValue = event.target.value;
+    setSelectedDate(dateValue ? new Date(dateValue) : null); // String'i Date'e çevir veya null yap
+  };
+
+  // Bugün butonuna basıldığında tarihi ayarla
+  const handleSetToday = () => {
+    setSelectedDate(new Date()); // Şu anki tarihi ayarla
+  };
+
+  // Tarih filtresini temizle
+  const handleClearDate = () => {
+    setSelectedDate(null);
+  };
+
+  */
 
   // --- JSX (Görünüm Kısmı) ---
   // Arayüzde büyük değişiklik yok, sadece prop'lar güncellendi
@@ -520,12 +712,14 @@ function PersonelApp() {
                   <label htmlFor="date-filter" className="flex items-center gap-2 font-medium"> <Calendar size={20} className="text-gray-600" /> Filter by Date: </label>
                   <input type="date" id="date-filter" value={selectedDate ? formatDateForApi(selectedDate) : ''} onChange={handleDateChange} className="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
                   <button onClick={handleSetToday} className="bg-blue-500 text-white rounded-md px-4 py-2 hover:bg-blue-600 transition-colors"> Today </button>
+                  {selectedDate && ( <button onClick={handleSetYenile} className="bg-gray-200 text-gray-700 rounded-md px-4 py-2 hover:bg-gray-300 transition-colors flex items-center gap-1" title="Clear date filter"> <Undo2 size={16}/> Yenile </button> )}
+
                   {selectedDate && ( <button onClick={handleClearDate} className="bg-gray-200 text-gray-700 rounded-md px-4 py-2 hover:bg-gray-300 transition-colors flex items-center gap-1" title="Clear date filter"> <Undo2 size={16}/> Clear </button> )}
               </div>
               {/* Dashboard Bileşeni */}
               <a>{selectedDate ? selectedDate.toLocaleDateString() : "Tarih Bilgisi Seçiniz"}</a>
               <FinancialDashboardDate
-                  completedOrders={completedOrders}
+                  completedOrders={completedOrders1}
                   products={products}
                   selectedDate={selectedDate} // << Doğru state geçirildi
                   isLoading={isLoading}     // << Doğru state geçirildi

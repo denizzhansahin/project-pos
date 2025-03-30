@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config'; // Opsiyonel ama iyi pratik
-import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { Product } from './entities/product.entity';
 import { Table } from './entities/table.entity';
@@ -18,7 +17,10 @@ import { OrdersModule } from './orders/orders.module';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { User } from './entities/user.entity';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { AppController } from './app.controller';
 import { EventsGateway } from './events/events.gateway';
+
 
 @Module({
   imports: [
@@ -42,7 +44,8 @@ import { EventsGateway } from './events/events.gateway';
     TablesModule,
     OrdersModule,
     UserModule,
-    AuthModule
+    AuthModule,
+    
     
     // --- Diğer Modüller ---
     // ProductsModule,
@@ -50,6 +53,6 @@ import { EventsGateway } from './events/events.gateway';
     // OrdersModule,
   ],
   controllers: [AppController],
-  providers: [AppService, EventsGateway],
+  providers: [AppService,EventsGateway],
 })
 export class AppModule {}

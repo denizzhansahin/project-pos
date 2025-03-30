@@ -1,6 +1,7 @@
 import React from 'react';
 import { Trash2, Receipt } from 'lucide-react';
 import { OrderItem } from '../types';
+import io, { Socket } from 'socket.io-client';
 
 interface OrderPanelProps {
   items: OrderItem[];

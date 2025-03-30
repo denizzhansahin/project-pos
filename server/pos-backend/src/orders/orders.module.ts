@@ -10,7 +10,6 @@ import { CompletedOrderItem } from 'src/entities/completed-order-item.entity';
 import { Product } from 'src/entities/product.entity';
 import { Table } from 'src/entities/table.entity';
 import { CompletedOrdersController } from './completed-orders.controller';
-import { EventsGateway } from 'src/events/events.gateway';
 
 @Module({
   imports: [
@@ -24,7 +23,7 @@ import { EventsGateway } from 'src/events/events.gateway';
     TablesModule, // TablesService'i import etmek için
   ],
   controllers: [OrdersController,CompletedOrdersController],
-  providers: [OrdersService,EventsGateway],
+  providers: [OrdersService],
   // exports: [OrdersService] // Gerekirse başka modüller için
 })
 export class OrdersModule {}

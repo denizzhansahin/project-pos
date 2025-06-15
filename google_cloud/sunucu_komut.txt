@@ -1,0 +1,190 @@
+
+    1  cd project-pos/
+    2  cd server/
+    3  cd pos-backend/
+    4  ls
+    5  rm package-lock.json 
+    6  npm install
+    7  # Download and install nvm:
+    8  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+    9  # in lieu of restarting the shell
+   10  \. "$HOME/.nvm/nvm.sh"
+   11  # Download and install Node.js:
+   12  nvm install 24
+   13  # Verify the Node.js version:
+   14  node -v # Should print "v24.2.0".
+   15  nvm current # Should print "v24.2.0".
+   16  # Verify npm version:
+   17  npm -v # Should print "11.3.0".
+   18  sudo apt install git -y
+   19  sudo npm install pm2 -g
+   20  npm install pm2 -g
+   21  git clone https://github.com/denizzhansahin/project-pos
+   22  cd project-pos/
+   23  ls
+   24  cd client/
+   25  ls
+   26  rm -rf package-lock.json 
+   27  npm install
+   28  npm run build
+   29  npm run preview -- --host
+   30  cd ..
+   31  cd project-pos/server/pos-backend/
+   32  ls
+   33  npm install
+   34  cd ..
+   35  cd client/
+   36  npm run preview -- --host
+   37  pm2
+   38  pm2 start npm --name vite -- run preview -- --host
+   39  ls
+   40  pm2 save
+   41  cd ..
+   42  cd server/pos-backend/
+   43  ls
+   44  pm2 start dist/main.js --name my-nest-app
+   45  ls
+   46  npm run build
+   47  pm2 start dist/main.js --name my-nest-app
+   48  pm2 save
+   49  pm2 startup
+   50  pm2 save
+   51  pm2 startup
+   52  pm2 save
+   53  pm2 delete vite
+   54  cd ..
+   55  cd client/
+   56  nano vite.config.ts 
+   57  npm run build
+   58  nano vite.config.ts 
+   59  npm run build
+   60  pm2 start npm --name vite -- run preview -- --host
+   61  pm2 save
+   62  sudo apt install nginx -y
+   63  sudo systemctl start nginx
+   64  sudo systemctl enable nginx
+   65  sudo nano /etc/nginx/sites-available/my-app
+   66  sudo nginx -t
+   67  sudo systemctl restart nginx
+   68  ls
+   69  sudo nano /etc/nginx/sites-available/my-app
+   70  sudo ln -s /etc/nginx/sites-available/my-app /etc/nginx/sites-enabled/
+   71  sudo nginx -t
+   72  sudo systemctl restart nginx
+   73  systemctl status nginx.service
+   74  journalctl -xeu nginx.service
+   75  sudo nginx -t
+   76  systemctl status nginx.service
+   77  sudo nano /etc/nginx/sites-available/my-app
+   78  sudo rm /etc/nginx/sites-enabled/default
+   79  sudo nginx -t
+   80  sudo systemctl restart nginx
+   81  sudo systemctl status nginx
+   82  sudo nano /etc/nginx/sites-available/my-app
+   83  nano vite.config.ts 
+   84  npm run build
+   85  pm2 restart my-vite-preview
+   86  curl -I -L http://34.172.71.60/vite/
+   87  ls
+   88  sudo nano /etc/nginx/sites-available/my-app
+   89  sudo ln -s /etc/nginx/sites-available/my-app /etc/nginx/sites-enabled/
+   90  sudo systemctl restart nginx
+   91  sudo ln -s /etc/nginx/sites-available/my-app /etc/nginx/sites-enabled/
+   92  sudo systemctl restart nginx
+   93  pm2 list
+   94  curl http://localhost:4173
+   95  sudo nginx -t
+   96  sudo nano /etc/nginx/sites-available/my-app
+   97  sudo nginx -t
+   98  sudo nano /etc/nginx/sites-available/my-app
+   99  sudo rm  /etc/nginx/sites-available/my-app
+  100  sudo nano /etc/nginx/sites-available/my-app
+  101  sudo ln -s /etc/nginx/sites-available/my-app /etc/nginx/sites-enabled/
+  102  sudo nano /etc/nginx/sites-enabled/my-app 
+  103  sudo nginx -t
+  104  sudo systemctl restart nginx
+  105  ls
+  106  pm2 list
+  107  sudo systemctl restart nginx
+  108  sudo nano /etc/nginx/sites-enabled/my-app 
+  109  npx vite preview --host 0.0.0.0 --port 8080
+  110  npx vite preview --host 0.0.0.0 --port 4174
+  111  nano vite.config.ts 
+  112  npm run build
+  113  pm2 restart my-vite-preview
+  114  pm2 lis
+  115  pm2 restart vite
+  116  cd ..
+  117  cd server/
+  118  cd pos-backend/
+  119  nano src/main.ts 
+  120  npm run build
+  121  pm2 restart my-nest-app
+  122  sudo rm  /etc/nginx/sites-available/my-app
+  123  sudo rm  /etc/nginx/sites-enabled/my-app 
+  124  sudo nano /etc/nginx/sites-available/
+  125  sudo nano /etc/nginx/sites-available/my-app
+  126  sudo rm  /etc/nginx/sites-available/default 
+  127  sudo nginx -t
+  128  sudo systemctl restart nginx
+  129  sudo ln -s /etc/nginx/sites-available/my-app /etc/nginx/sites-enabled/
+  130  sudo nginx -t
+  131  sudo systemctl restart nginx
+  132  cd ..
+  133  cd client/
+  134  nano src/services/
+  135  nano src/services/api.ts 
+  136  nano src/pages/LoginPage.tsx 
+  137  nano src/pages/Personel.tsx 
+  138  nano src/pages/Yonetici.tsx 
+  139  npm run build
+  140  pm2 restart vite
+  141  sudo systemctl restart nginx
+  142  pm2 list
+  143  ls
+  144  cd project-pos/
+  145  cd client/
+  146  pm2 start npm --name vite -- run preview -- --host
+  147  pm2 save
+  148  cd ..
+  149  cd server/pos-backend/
+  150  pm2 start dist/main.js --name my-nest-app
+  151  pm2 save
+  152  sudo systemctl restart nginx
+  153  cd project-pos/client/
+  154  nano src/pages/Personel.tsx 
+  155  nano src/pages/Yonetici.tsx 
+  156  npm run build
+  157  pm2 restart my-vite-app
+  158  pm2 list
+  159  pm2 restart vite
+  160  sudo systemctl restart nginx
+  161  cd ..
+  162  cd server/pos-backend/
+  163  nano src/main.ts 
+  164  curl http://localhost:3001/api/herhangi_bir_http_endpointiniz
+  165  nano src/main.ts 
+  166  npm run build
+  167  pm2 restart my-nest-app
+  168  pm2 save
+  169  cd ../..
+  170  cd client/
+  171  nano src/pages/Personel.tsx 
+  172  nano src/pages/Yonetici.tsx 
+  173  nano src/services/api.ts 
+  174  npm run build
+  175  pm2 restart vite
+  176  pm2 save
+  177  sudo systemctl restart nginx
+  178  sudo nano /etc/nginx/sites-available/my-app 
+  179  sudo ln -s /etc/nginx/sites-available/my-app /etc/nginx/sites-enabled/
+  180  sudo systemctl restart nginx
+  181  cd ..
+  182  ls
+  183  rm arsiv_adi.zip 
+  184  cd project-pos/
+  185  ls
+  186  zip -r my_project_arsiv.zip . -x "*node_modules/*"
+  187  ls
+  188  pwd
+  189  history

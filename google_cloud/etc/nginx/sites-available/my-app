@@ -1,0 +1,49 @@
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+
+    server_name YOUR_VM_EXTERNAL_IP_ADDRESS; # veya _ veya alan adınız
+
+    access_log /var/log/nginx/my-app.access.log;
+    error_log /var/log/nginx/my-app.error.log;
+
+    # Frontend (ViteJS) istekleri için kök yol (/)
+    location / {
+        proxy_pass http://localhost:4173; # ViteJS preview sunucunuzun portu
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+
+        # Client-side router (history mode) için fallback.
+        # Eğer Vite preview sunucusu 404 döndürürse (örn: /some/deep/link için)
+        # bu, isteği Vite'ın ana index.html dosyasına yönlendirmeyi deneyebilir.
+        # proxy_intercept_errors on;
+        # error_page 404 = /index.html;
+        # Bu satırlar proxy ile çalışırken bazen sorun çıkarabilir,
+        # Vite preview'ın kendisi bu durumu halletmeli.
+    }
+
+    # Backend (NestJS) API istekleri için (/api)
+    location /api {
+        proxy_pass http://localhost:5000; # NestJS uygulamanızın portu (3001 veya 3000)
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+
+        # Eğer NestJS'te app.setGlobalPrefix('api') KULLANILMADIYSA
+        # ve API endpoint'leriniz sadece /auth/login şeklindeyse,
+        # Nginx'e gelen /api/auth/login isteğini NestJS'e /auth/login olarak iletmek için:
+        # rewrite /api/(.*) /$1 break;
+        # Ancak NestJS'te global prefix kullanmak daha temizdir.
+    }
+}
